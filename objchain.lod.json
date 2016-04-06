@@ -1,0 +1,22 @@
+{
+    "chain":
+    [
+        {
+            "level": 0,
+            "file": "0.obj",
+            "faces": 244215
+        },
+        {
+            "level": 1,
+            "file": "0_Reduced_1.obj",
+            "faces": 122106
+        },
+        {
+            "level": 2,
+            "file": "0_Reduced_2.obj",
+            "faces": 61053
+        }
+
+    ],
+    "original":"quarry_3M.obj"
+}
