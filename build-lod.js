@@ -2,7 +2,7 @@
 var fs = require('fs');
 var parseObj = require('parse-obj');
 var async = require('async');
-var inputDir = "/Users/alan/dev/obj-split/testdata/quarry_3M_obj/0/";
+var inputDir = "/Users/alan/dev/obj-split/testdata/quarry_3M_obj/23/";
 var LodVertex3 = require('./LodVertex3');
 
 var obj_files = [];
@@ -15,11 +15,10 @@ function blast_off(inputDir)
 
 }
 
-
 function doHierarchy()
 {
     //Order smallest (low-res) to largest (original)
-    obj_files.sort(_hierarchy_sort);
+    obj_files.sort(_hierarchy_sort); // sorts by polygon count not filename
 
     // Extract the global vertex list
     var GlobalVertices = getVertices();
@@ -35,7 +34,8 @@ function doHierarchy()
     // 6. etc
 
     var LodVertices = [];       // array of arrays
-    var LodFaceIndices = [];    //
+
+    var totalPolygons = 0;
 
 
     for (var t=0; t<obj_files.length; t++)
@@ -61,11 +61,15 @@ function doHierarchy()
             }
         }
 
+        totalPolygons += thisMesh.facePositions.length;
+
         LodVertices.push(thisMeshVertexList);
     }
 
+    console.log("Total polygons: "+totalPolygons);
+
     var hierarchy = {
-        totalFaces: GlobalVertices.length,
+        totalVertices: GlobalVertices.length,
         frames:[]
     };
 
@@ -79,6 +83,7 @@ function doHierarchy()
         };
     }
 
+    console.log("Writing `"+inputDir+"lod.json`");
     fs.writeFile(inputDir+"lod.json", JSON.stringify(hierarchy), function(){
         console.log("Done");
         process.exit(0);
@@ -107,13 +112,20 @@ function loadAllObjs(inputDir, callbackWhenDone)
     async.forEachSeries(files,
         function(file, cb)
         {
-            process.stdout.write("Reading `"+file+"`...");
-            parseObj(fs.createReadStream(inputDir + file), function (err, result) {
-                //cb(result);
-                obj_files.push(result);
-                console.log("OK");
+            if (file.indexOf(".obj") != -1)
+            {
+                process.stdout.write("Reading `"+file+"`...");
+
+                parseObj(fs.createReadStream(inputDir + file), function (err, result)
+                {
+                    //cb(result);
+                    obj_files.push(result);
+                    console.log("OK");
+                    cb();
+                });
+            } else {
                 cb();
-            });
+            }
 
         }, function(err)
         {
